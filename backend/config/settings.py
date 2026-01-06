@@ -30,10 +30,10 @@ INSTALLED_APPS = [
     'django_filters',
 
     # Local apps
-    'authentication.apps.AuthenticationConfig',
-    'itinerary.apps.ItineraryConfig',
-    'checklist.apps.ChecklistConfig',
-    'photos.apps.PhotosConfig',
+    'core.authentication.apps.AuthenticationConfig',
+    'core.itinerary.apps.ItineraryConfig',
+    'core.checklist.apps.ChecklistConfig',
+    'core.photos.apps.PhotosConfig',
 ]
 
 MIDDLEWARE = [

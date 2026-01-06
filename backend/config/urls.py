@@ -16,10 +16,10 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
     # App endpoints (serão criados nos próximos passos)
-    path('api/auth/', include('authentication.urls')),
-    path('api/itinerary/', include('itinerary.urls')),
-    path('api/checklist/', include('checklist.urls')),
-    path('api/photos/', include('photos.urls')),
+    path('api/auth/', include('core.authentication.urls')),
+    path('api/itinerary/', include('core.itinerary.urls')),
+    path('api/checklist/', include('core.checklist.urls')),
+    path('api/photos/', include('core.photos.urls')),
 ]
 
 # Servir arquivos de media em desenvolvimento
