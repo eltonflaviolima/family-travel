@@ -72,6 +72,9 @@ class AttractionSerializer(serializers.ModelSerializer):
             'type_display',
             'description',
             'fun_fact',
+            'suggested_duration',
+            'priority_order',
+            'visited',
             'tips',
             'tips_count',
         ]
@@ -106,6 +109,9 @@ class AttractionListSerializer(serializers.ModelSerializer):
             'type',
             'type_display',
             'description',
+            'suggested_duration',
+            'priority_order',
+            'visited',
             'tips_count',
         ]
         read_only_fields = ['id']
@@ -233,3 +239,84 @@ class CityCreateSerializer(serializers.ModelSerializer):
             )
 
         return attrs
+
+
+class AttractionSummarySerializer(serializers.ModelSerializer):
+    """
+    Serializer simplificado para atrações em resumo de cidades.
+    """
+    type_display = serializers.CharField(
+        source='get_type_display',
+        read_only=True
+    )
+
+    class Meta:
+        model = Attraction
+        fields = ['name', 'type', 'type_display', 'suggested_duration', 'priority_order', 'visited']
+
+
+class CitySummarySerializer(serializers.ModelSerializer):
+    """
+    Serializer customizado para resumo de cidades com atrações.
+    Formata datas no formato 'dd mmm' e inclui informações calculadas.
+    """
+    arrival_date_formatted = serializers.SerializerMethodField()
+    departure_date_formatted = serializers.SerializerMethodField()
+    duration_days = serializers.SerializerMethodField()
+    attractions_count = serializers.IntegerField(
+        source='attractions.count',
+        read_only=True
+    )
+    attractions = AttractionSummarySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = City
+        fields = [
+            'name',
+            'arrival_date_formatted',
+            'departure_date_formatted',
+            'duration_days',
+            'attractions_count',
+            'attractions',
+        ]
+
+    def get_arrival_date_formatted(self, obj):
+        """
+        Formata a data de chegada no formato '04 jun'.
+        """
+        if obj.arrival_date:
+            # Mapeamento de meses em português
+            months = {
+                1: 'jan', 2: 'fev', 3: 'mar', 4: 'abr',
+                5: 'mai', 6: 'jun', 7: 'jul', 8: 'ago',
+                9: 'set', 10: 'out', 11: 'nov', 12: 'dez'
+            }
+            day = obj.arrival_date.day
+            month = months[obj.arrival_date.month]
+            return f"{day:02d} {month}"
+        return None
+
+    def get_departure_date_formatted(self, obj):
+        """
+        Formata a data de partida no formato '04 jun'.
+        """
+        if obj.departure_date:
+            # Mapeamento de meses em português
+            months = {
+                1: 'jan', 2: 'fev', 3: 'mar', 4: 'abr',
+                5: 'mai', 6: 'jun', 7: 'jul', 8: 'ago',
+                9: 'set', 10: 'out', 11: 'nov', 12: 'dez'
+            }
+            day = obj.departure_date.day
+            month = months[obj.departure_date.month]
+            return f"{day:02d} {month}"
+        return None
+
+    def get_duration_days(self, obj):
+        """
+        Calcula a duração da estadia em dias.
+        """
+        if obj.arrival_date and obj.departure_date:
+            delta = obj.departure_date - obj.arrival_date
+            return delta.days
+        return None

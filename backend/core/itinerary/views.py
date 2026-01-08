@@ -1,7 +1,9 @@
 from datetime import datetime
 from rest_framework import viewsets, filters, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework.reverse import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count, Q
 
@@ -10,6 +12,7 @@ from .serializers import (
     CitySerializer,
     CityListSerializer,
     CityCreateSerializer,
+    CitySummarySerializer,
     AttractionSerializer,
     AttractionListSerializer,
     AttractionTipSerializer,
@@ -33,8 +36,8 @@ class CityViewSet(viewsets.ModelViewSet):
     - by_country: Agrupa cidades por país
     """
     queryset = City.objects.all()
-    filter_backends = [DjangoFilterBackend,
-                       filters.SearchFilter, filters.OrderingFilter]
+    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['country']
     search_fields = ['name', 'country', 'description']
     ordering_fields = ['name', 'country', 'arrival_date', 'departure_date']
@@ -74,8 +77,7 @@ class CityViewSet(viewsets.ModelViewSet):
         Retorna cidades com data de chegada futura.
         """
         now = datetime.now()
-        cities = self.queryset.filter(
-            arrival_date__gt=now).order_by('arrival_date')
+        cities = self.queryset.filter(arrival_date__gt=now).order_by('arrival_date')
         serializer = CityListSerializer(cities, many=True)
         return Response(serializer.data)
 
@@ -140,6 +142,19 @@ class CityViewSet(viewsets.ModelViewSet):
 
         return Response(stats)
 
+    @action(detail=False, methods=['get'])
+    def summary(self, request):
+        """
+        Retorna resumo de todas as cidades com atrações.
+        Formato: nome da cidade, datas formatadas (dd mmm), duração, contagem e lista de atrações.
+        """
+        cities = self.queryset.prefetch_related('attractions').annotate(
+            attractions_count=Count('attractions')
+        ).order_by('arrival_date')
+
+        serializer = CitySummarySerializer(cities, many=True)
+        return Response(serializer.data)
+
 
 class AttractionViewSet(viewsets.ModelViewSet):
     """
@@ -157,8 +172,8 @@ class AttractionViewSet(viewsets.ModelViewSet):
     - popular: Atrações com mais dicas
     """
     queryset = Attraction.objects.all()
-    filter_backends = [DjangoFilterBackend,
-                       filters.SearchFilter, filters.OrderingFilter]
+    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['city', 'type']
     search_fields = ['name', 'description', 'fun_fact']
     ordering_fields = ['name', 'type', 'city__name']
@@ -251,8 +266,8 @@ class AttractionTipViewSet(viewsets.ModelViewSet):
     """
     queryset = AttractionTip.objects.all()
     serializer_class = AttractionTipSerializer
-    filter_backends = [DjangoFilterBackend,
-                       filters.SearchFilter, filters.OrderingFilter]
+    permission_classes = [AllowAny]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['attraction', 'category']
     search_fields = ['title']
     ordering_fields = ['title', 'category']
@@ -297,3 +312,17 @@ class AttractionTipViewSet(viewsets.ModelViewSet):
         }
 
         return Response(stats)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def api_root(request, format=None):
+    """
+    Página inicial da API de Itinerário.
+    Lista todos os endpoints disponíveis.
+    """
+    return Response({
+        'cities': reverse('city-list', request=request, format=format),
+        'attractions': reverse('attraction-list', request=request, format=format),
+        'tips': reverse('tip-list', request=request, format=format),
+    })

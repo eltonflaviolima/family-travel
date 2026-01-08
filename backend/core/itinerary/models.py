@@ -88,6 +88,26 @@ class Attraction(models.Model):
         help_text='Uma curiosidade ou fato interessante sobre a atração'
     )
 
+    suggested_duration = models.IntegerField(
+        'Tempo sugerido (minutos)',
+        null=True,
+        blank=True,
+        help_text='Tempo sugerido de permanência na atração em minutos'
+    )
+
+    priority_order = models.IntegerField(
+        'Ordem de prioridade',
+        null=True,
+        blank=True,
+        help_text='Ordem de prioridade da visita (1 = mais prioritária)'
+    )
+
+    visited = models.BooleanField(
+        'Visitado',
+        default=False,
+        help_text='Indica se a atração já foi visitada'
+    )
+
     class Meta:
         verbose_name = 'Atração'
         verbose_name_plural = 'Atrações'
