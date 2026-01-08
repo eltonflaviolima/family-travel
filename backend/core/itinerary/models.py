@@ -20,6 +20,13 @@ class City(models.Model):
         blank=True,
         help_text='Descrição geral da cidade'
     )
+    photo = models.ImageField(
+        'Foto',
+        upload_to='cities/',
+        blank=True,
+        null=True,
+        help_text='Foto representativa da cidade'
+    )
     arrival_date = models.DateTimeField('Data da chegada')
     departure_date = models.DateTimeField('Data da partida')
 
@@ -86,6 +93,14 @@ class Attraction(models.Model):
         'Curiosidade',
         blank=True,
         help_text='Uma curiosidade ou fato interessante sobre a atração'
+    )
+
+    photo = models.ImageField(
+        'Foto',
+        upload_to='attractions/',
+        blank=True,
+        null=True,
+        help_text='Foto representativa da atração'
     )
 
     suggested_duration = models.IntegerField(

@@ -72,6 +72,7 @@ class AttractionSerializer(serializers.ModelSerializer):
             'type_display',
             'description',
             'fun_fact',
+            'photo',
             'suggested_duration',
             'priority_order',
             'visited',
@@ -109,6 +110,7 @@ class AttractionListSerializer(serializers.ModelSerializer):
             'type',
             'type_display',
             'description',
+            'photo',
             'suggested_duration',
             'priority_order',
             'visited',
@@ -135,6 +137,7 @@ class CitySerializer(serializers.ModelSerializer):
             'name',
             'country',
             'description',
+            'photo',
             'arrival_date',
             'departure_date',
             'duration_days',
@@ -185,6 +188,7 @@ class CityListSerializer(serializers.ModelSerializer):
             'name',
             'country',
             'description',
+            'photo',
             'arrival_date',
             'departure_date',
             'duration_days',
@@ -212,6 +216,7 @@ class CityCreateSerializer(serializers.ModelSerializer):
             'name',
             'country',
             'description',
+            'photo',
             'arrival_date',
             'departure_date',
         ]
@@ -252,7 +257,7 @@ class AttractionSummarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Attraction
-        fields = ['name', 'type', 'type_display', 'suggested_duration', 'priority_order', 'visited']
+        fields = ['name', 'type', 'type_display', 'photo', 'suggested_duration', 'priority_order', 'visited']
 
 
 class CitySummarySerializer(serializers.ModelSerializer):
@@ -273,6 +278,7 @@ class CitySummarySerializer(serializers.ModelSerializer):
         model = City
         fields = [
             'name',
+            'photo',
             'arrival_date_formatted',
             'departure_date_formatted',
             'duration_days',

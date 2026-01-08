@@ -15,7 +15,7 @@ class CityAdmin(admin.ModelAdmin):
             'fields': ('name', 'country')
         }),
         ('Descrição', {
-            'fields': ('description',),
+            'fields': ('description', 'photo'),
             'classes': ('wide',)
         }),
         ('Datas da Viagem', {
@@ -46,7 +46,7 @@ class AttractionAdmin(admin.ModelAdmin):
             'fields': ('city', 'name', 'type')
         }),
         ('Detalhes', {
-            'fields': ('description', 'fun_fact'),
+            'fields': ('description', 'fun_fact', 'photo'),
             'classes': ('wide',)
         }),
     )
