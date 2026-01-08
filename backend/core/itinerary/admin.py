@@ -49,6 +49,10 @@ class AttractionAdmin(admin.ModelAdmin):
             'fields': ('description', 'fun_fact', 'photo'),
             'classes': ('wide',)
         }),
+        ('Cronograma', {
+            'fields': ('suggested_duration', 'priority_order', 'visited'),
+            'classes': ('wide',)
+        }),
     )
 
     inlines = [AttractionTipInline]

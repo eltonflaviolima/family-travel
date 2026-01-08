@@ -257,7 +257,7 @@ class AttractionSummarySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Attraction
-        fields = ['name', 'type', 'type_display', 'photo', 'suggested_duration', 'priority_order', 'visited']
+        fields = ['id', 'name', 'type', 'type_display', 'photo', 'suggested_duration', 'priority_order', 'visited']
 
 
 class CitySummarySerializer(serializers.ModelSerializer):
