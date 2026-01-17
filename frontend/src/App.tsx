@@ -19,9 +19,8 @@ function App() {
           <Link to="/login">Login</Link>
         </nav>
 
-        #TODO: Funcionalidade de reordenar a prioridade das atraçoes de acordo com a posção na pagina de resumo
-        #TODO: Funcionalidade de colapsar a seçao das atraçoes mantenho apenas o cartao da cidade
-        #TODO: Adicionar as seçoes de dicas nas paginas de detalhes
+        {/* TODO: Funcionalidade de colapsar a seçao das atraçoes mantenho apenas o cartao da cidade */}
+        {/* TODO: Adicionar as seçoes de dicas nas paginas de detalhes */}
 
         <Routes>
           {/* Página pública */}

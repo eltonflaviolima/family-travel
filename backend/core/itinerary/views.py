@@ -6,6 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.reverse import reverse
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Count, Q
+from django.db import transaction
 
 from .models import City, Attraction, AttractionTip
 from .serializers import (
@@ -248,6 +249,55 @@ class AttractionViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'])
+    def reorder(self, request):
+        """
+        Reordena atrações de uma cidade específica.
+
+        Payload esperado:
+        {
+            "city_id": 1,
+            "attraction_ids": [5, 3, 8, 2, 1]  # IDs na nova ordem
+        }
+
+        O índice no array define o priority_order (1-indexed).
+        """
+        city_id = request.data.get('city_id')
+        attraction_ids = request.data.get('attraction_ids', [])
+
+        if not city_id:
+            return Response(
+                {'error': 'city_id é obrigatório'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not attraction_ids:
+            return Response(
+                {'error': 'attraction_ids é obrigatório'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validar que todas as atrações pertencem à cidade
+        attractions = Attraction.objects.filter(
+            id__in=attraction_ids,
+            city_id=city_id
+        )
+
+        if attractions.count() != len(attraction_ids):
+            return Response(
+                {'error': 'Algumas atrações não pertencem à cidade especificada'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Atualizar priority_order em batch
+        with transaction.atomic():
+            for index, attraction_id in enumerate(attraction_ids):
+                Attraction.objects.filter(id=attraction_id).update(
+                    priority_order=index + 1
+                )
+
+        return Response({'status': 'ok', 'reordered': len(attraction_ids)})
 
 
 class AttractionTipViewSet(viewsets.ModelViewSet):

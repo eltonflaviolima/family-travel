@@ -272,11 +272,12 @@ class CitySummarySerializer(serializers.ModelSerializer):
         source='attractions.count',
         read_only=True
     )
-    attractions = AttractionSummarySerializer(many=True, read_only=True)
+    attractions = serializers.SerializerMethodField()
 
     class Meta:
         model = City
         fields = [
+            'id',
             'name',
             'photo',
             'arrival_date_formatted',
@@ -285,6 +286,17 @@ class CitySummarySerializer(serializers.ModelSerializer):
             'attractions_count',
             'attractions',
         ]
+
+    def get_attractions(self, obj):
+        """
+        Retorna atrações ordenadas por priority_order (nulls last), depois por nome.
+        """
+        from django.db.models import F
+        attractions = obj.attractions.all().order_by(
+            F('priority_order').asc(nulls_last=True),
+            'name'
+        )
+        return AttractionSummarySerializer(attractions, many=True).data
 
     def get_arrival_date_formatted(self, obj):
         """

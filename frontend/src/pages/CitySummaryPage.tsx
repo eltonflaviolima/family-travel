@@ -1,19 +1,36 @@
-import { useCitiesSummary } from "../hooks/useCitiesSummary";
+import {
+  useCitiesSummary,
+  AttractionSummary,
+} from "../hooks/useCitiesSummary";
 import { useNavigate } from "react-router-dom";
+import { SortableAttractionsList } from "../components/SortableAttractionsList";
 
 const API_BASE_URL = "http://localhost:8000";
 
 export default function CitySummaryPage() {
-  const { cities, loading, error } = useCitiesSummary();
+  const {
+    cities,
+    loading,
+    error,
+    reordering,
+    updateLocalOrder,
+    reorderAttractions,
+  } = useCitiesSummary();
   const navigate = useNavigate();
 
-  // Função auxiliar para construir URL completa da imagem
   const getImageUrl = (photoPath: string | null) => {
     if (!photoPath) return null;
-    // Se já for uma URL completa, retorna como está
     if (photoPath.startsWith("http")) return photoPath;
-    // Caso contrário, constrói a URL completa
     return `${API_BASE_URL}${photoPath.startsWith("/") ? "" : "/"}${photoPath}`;
+  };
+
+  const handleReorder = (
+    cityId: number,
+    newAttractions: AttractionSummary[],
+    attractionIds: number[]
+  ) => {
+    updateLocalOrder(cityId, newAttractions);
+    reorderAttractions(cityId, attractionIds);
   };
 
   if (loading) return <p>Carregando resumo das cidades...</p>;
@@ -23,12 +40,24 @@ export default function CitySummaryPage() {
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: 20 }}>
       <h1 style={{ marginBottom: 24, fontSize: 28, fontWeight: "bold" }}>
         Resumo do Itinerário
+        {reordering && (
+          <span
+            style={{
+              fontSize: 14,
+              color: "#666",
+              fontWeight: "normal",
+              marginLeft: 12,
+            }}
+          >
+            Salvando...
+          </span>
+        )}
       </h1>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-        {cities.map((city, index) => (
+        {cities.map((city) => (
           <div
-            key={index}
+            key={city.id}
             style={{
               border: "1px solid #e0e0e0",
               borderRadius: 12,
@@ -37,7 +66,7 @@ export default function CitySummaryPage() {
               boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
             }}
           >
-            {/* Cabeçalho da Cidade */}
+            {/* Cabecalho da Cidade */}
             <div style={{ marginBottom: 20 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 {getImageUrl(city.photo) && (
@@ -81,7 +110,7 @@ export default function CitySummaryPage() {
               </div>
             </div>
 
-            {/* Lista de Atrações */}
+            {/* Lista de Atracoes com Drag-and-Drop */}
             {city.attractions.length > 0 && (
               <div>
                 <h3
@@ -93,130 +122,28 @@ export default function CitySummaryPage() {
                   }}
                 >
                   Atrações do Dia
+                  <span
+                    style={{
+                      fontSize: 12,
+                      color: "#999",
+                      fontWeight: "normal",
+                      marginLeft: 8,
+                    }}
+                  >
+                    (arraste para reordenar)
+                  </span>
                 </h3>
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {city.attractions.map((attraction, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => navigate(`/attractions/${attraction.id}`)}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 16,
-                        padding: 12,
-                        backgroundColor: "#f9f9f9",
-                        borderRadius: 8,
-                        border: "1px solid #f0f0f0",
-                        cursor: "pointer",
-                        transition: "all 0.2s",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#f0f0f0";
-                        e.currentTarget.style.transform = "translateX(4px)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "#f9f9f9";
-                        e.currentTarget.style.transform = "translateX(0)";
-                      }}
-                    >
-                      {/* Foto da Atração */}
-                      {getImageUrl(attraction.photo) && (
-                        <img
-                          src={getImageUrl(attraction.photo)!}
-                          alt={attraction.name}
-                          style={{
-                            width: 60,
-                            height: 60,
-                            objectFit: "cover",
-                            borderRadius: 6,
-                          }}
-                        />
-                      )}
-
-                      {/* Ícone de pontos */}
-                      {!getImageUrl(attraction.photo) && (
-                        <div
-                          style={{
-                            width: 40,
-                            height: 40,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            backgroundColor: "#e0e0e0",
-                            borderRadius: 6,
-                          }}
-                        >
-                          <span style={{ fontSize: 20 }}>📍</span>
-                        </div>
-                      )}
-
-                      {/* Informações da Atração */}
-                      <div style={{ flex: 1 }}>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 8,
-                          }}
-                        >
-                          <h4
-                            style={{
-                              margin: 0,
-                              fontSize: 16,
-                              fontWeight: "500",
-                            }}
-                          >
-                            {attraction.name}
-                          </h4>
-                          {attraction.visited && (
-                            <span
-                              style={{
-                                fontSize: 12,
-                                padding: "2px 8px",
-                                backgroundColor: "#4caf50",
-                                color: "white",
-                                borderRadius: 4,
-                              }}
-                            >
-                              ✓ Visitado
-                            </span>
-                          )}
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: 12,
-                            marginTop: 4,
-                            fontSize: 13,
-                            color: "#666",
-                          }}
-                        >
-                          <span>{attraction.type_display}</span>
-                          {attraction.suggested_duration && (
-                            <span>⏱️ {attraction.suggested_duration} min</span>
-                          )}
-                          {attraction.priority_order && (
-                            <span>⭐ Prioridade: {attraction.priority_order}</span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Seta de navegação */}
-                      <div
-                        style={{
-                          fontSize: 20,
-                          color: "#ccc",
-                        }}
-                      >
-                        ›
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <SortableAttractionsList
+                  cityId={city.id}
+                  attractions={city.attractions}
+                  onReorder={handleReorder}
+                  onNavigate={(id) => navigate(`/attractions/${id}`)}
+                  getImageUrl={getImageUrl}
+                />
               </div>
             )}
 
-            {/* Mensagem se não houver atrações */}
+            {/* Mensagem se nao houver atracoes */}
             {city.attractions.length === 0 && (
               <p style={{ color: "#999", fontStyle: "italic" }}>
                 Nenhuma atração cadastrada para esta cidade.
@@ -226,7 +153,7 @@ export default function CitySummaryPage() {
         ))}
       </div>
 
-      {/* Mensagem se não houver cidades */}
+      {/* Mensagem se nao houver cidades */}
       {cities.length === 0 && (
         <div
           style={{
